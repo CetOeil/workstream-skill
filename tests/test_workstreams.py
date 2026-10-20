@@ -207,7 +207,7 @@ class WorkstreamsTest(unittest.TestCase):
         self.assertTrue(text.endswith("<!-- workstreams:index:end -->\n\n## Conventions\n"))
 
     def test_clean_fixture_passes_check_once_indexed(self):
-        self.assertEqual(self.check().errors, ["README.md: index is stale; run the index command"])
+        self.assertEqual(self.check().errors, ["README.md: [WS-INDEX] index is stale; run the index command"])
         quiet(ws.cmd_index, self.root)
         report = self.check()
         self.assertEqual(report.errors, [])
@@ -219,7 +219,7 @@ class WorkstreamsTest(unittest.TestCase):
         self.assertEqual(report.errors, [])
         self.assertEqual(
             report.warnings,
-            ["2026-10-20-active-fixture/TODO.md:3: TODO 2 is overdue (due 2026-10-22 18:30)"],
+            ["2026-10-20-active-fixture/TODO.md:3: [WS-OVERDUE] TODO 2 is overdue (due 2026-10-22 18:30)"],
         )
 
     def test_check_reports_each_defect(self):
@@ -237,18 +237,18 @@ class WorkstreamsTest(unittest.TestCase):
         errors = self.check().errors
         name = f.name
         expected = [
-            f"{name}/TODO.md:9: TODO 4 state must be one of open, monitor, blocked, got [waiting]",
-            f"{name}/OPEN-ISSUES.md:5: OPEN-1 is resolved but under '## Open'",
-            f"{name}/STATUS.md: blocks must be newest first",
-            f"{name}/STATUS.md: 6 blocks (at most 5); run trim-status",
-            f"{name}: unexpected file manifest.json",
-            f"{name}/README.md: phase must be one of active, monitoring, blocked, done, closed",
-            f"{name}/README.md: updated 2026-10-20 09:00 is older than the newest STATUS block",
-            f"{name}/TODO.md: duplicate TODO 2",
-            f"{name}/README.md: Next steps has 4 items (at most 3)",
-            f"{name}/README.md: Next steps cites TODO 1, which is done",
-            f"{name}/CONCLUSIONS.md:3: C1 status must start with one of current, confirmed, revised, superseded, retracted",
-            f"{name}/README.md:15: broken link PLAN.md",
+            f"{name}/TODO.md:9: [WS-TODO] TODO 4 state must be one of open, monitor, blocked, got [waiting]",
+            f"{name}/OPEN-ISSUES.md:5: [WS-OPEN] OPEN-1 is resolved but under '## Open'",
+            f"{name}/STATUS.md: [WS-STATUS] blocks must be newest first",
+            f"{name}/STATUS.md: [WS-STATUS] 6 blocks (at most 5); run trim-status",
+            f"{name}: [WS-LAYOUT] unexpected file manifest.json",
+            f"{name}/README.md: [WS-PHASE] phase must be one of active, monitoring, blocked, done, closed",
+            f"{name}/README.md: [WS-PHASE] updated 2026-10-20 09:00 is older than the newest STATUS block",
+            f"{name}/TODO.md: [WS-IDS] duplicate TODO 2",
+            f"{name}/README.md: [WS-NEXT] Next steps has 4 items (at most 3)",
+            f"{name}/README.md: [WS-NEXT] Next steps cites TODO 1, which is done",
+            f"{name}/CONCLUSIONS.md:3: [WS-CONCLUSION] C1 status must start with one of current, confirmed, revised, superseded, retracted",
+            f"{name}/README.md:15: [WS-LINK] broken link PLAN.md",
         ]
         for message in expected:
             self.assertIn(message, errors)
@@ -259,8 +259,8 @@ class WorkstreamsTest(unittest.TestCase):
         a = self.folder()
         write(self.root, f"{a.name}/README.md", ACTIVE_README.replace("phase: active", "phase: monitoring"))
         errors = self.check().errors
-        self.assertIn(f"{d.name}/README.md: phase done but TODO 3 is still monitor", errors)
-        self.assertIn(f"{a.name}/README.md: phase monitoring but a TODO is open or blocked (use active)", errors)
+        self.assertIn(f"{d.name}/README.md: [WS-PHASE] phase done but TODO 3 is still monitor", errors)
+        self.assertIn(f"{a.name}/README.md: [WS-PHASE] phase monitoring but a TODO is open or blocked (use active)", errors)
 
     def test_active_phase_needs_a_next_step_and_unknown_references_fail(self):
         a = self.folder()
@@ -268,9 +268,9 @@ class WorkstreamsTest(unittest.TestCase):
         write(self.root, f"{a.name}/README.md", readme)
         write(self.root, f"{a.name}/TODO.md", ACTIVE_TODO.replace("after TODO 2", "after TODO 9").replace("OPEN-1]", "OPEN-7]"))
         errors = self.check().errors
-        self.assertIn(f"{a.name}/README.md: phase active needs at least one next step", errors)
-        self.assertIn(f"{a.name}/TODO.md:7: TODO 3 is after unknown TODO 9", errors)
-        self.assertIn(f"{a.name}/TODO.md:3: TODO 2 cites unknown OPEN-7", errors)
+        self.assertIn(f"{a.name}/README.md: [WS-NEXT] phase active needs at least one next step", errors)
+        self.assertIn(f"{a.name}/TODO.md:7: [WS-REFS] TODO 3 is after unknown TODO 9", errors)
+        self.assertIn(f"{a.name}/TODO.md:3: [WS-REFS] TODO 2 cites unknown OPEN-7", errors)
 
     def test_next_groups_due_waiting_and_next_steps(self):
         lines = ws.next_lines(self.root, NOW)

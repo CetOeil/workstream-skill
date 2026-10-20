@@ -36,6 +36,13 @@ ln -s ~/workstreams-skill/skills/workstreams ~/.claude/skills/workstreams   # Cl
 ln -s ~/workstreams-skill/skills/workstreams ~/.agents/skills/workstreams   # agents that read ~/.agents
 ```
 
+On Windows, link or copy the same folder (a junction needs no administrator rights):
+
+```powershell
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.agents\skills\workstreams" `
+  -Target "<path>\workstreams-skill\skills\workstreams"
+```
+
 Or copy `skills/workstreams/` into a project's own skills directory (`.claude/skills/`,
 `.agents/skills/`, `.github/skills/`).
 
@@ -55,6 +62,9 @@ python3 skills/workstreams/scripts/workstreams.py new first-feature --subject "t
 python3 skills/workstreams/scripts/workstreams.py check
 ```
 
+Use `python` instead of `python3` where that is the interpreter's name (common on Windows); the
+script also accepts `py -3`. It requires Python 3.9+ and writes LF on every OS.
+
 Add a line to the project's agent instructions so every agent loads the skill and runs `check`
 before committing a change under `workstreams/`. A project may also copy the script into its own
 `scripts/` directory and pin the version it validates against.
@@ -70,6 +80,9 @@ files into the directory it names, which would mix two systems in one folder.
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
+Use `python` where `python3` is not the interpreter's name. The suite covers the rules
+(`tests/test_workstreams.py`) and the cross-platform I/O contract (`tests/test_platform.py`).
 
 Keep the script standard-library only, and add a test for every new rule in
 [`tests/test_workstreams.py`](tests/test_workstreams.py).

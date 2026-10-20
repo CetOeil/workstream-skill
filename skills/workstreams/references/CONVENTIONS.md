@@ -4,6 +4,10 @@ A workstream is one folder under `workstreams/`, laid out as a handover: a reade
 up its outstanding work from the folder alone. [`scripts/workstreams.py`](../scripts/workstreams.py)
 checks every rule marked **(checked)**.
 
+`MUST` and **(checked)** mean the checker enforces the rule; `SHOULD` is advice for humans and
+agents, not checked. A project's own `workstreams/README.md` may narrow or extend these rules, but
+it cannot relax a `MUST`; record project-specific choices there.
+
 ## Layout
 
 ```text
@@ -24,7 +28,9 @@ workstreams/
     logs/README.md               test commands and where the logs are
 ```
 
-No other files or directories **(checked)**. The artifact list is the README's `## Artifacts`
+No other files or directories **(checked)**. The `artifacts/docs/`, `artifacts/analysis/` and
+`logs/README.md` rows are the default layout; a project may choose another and record it in
+`workstreams/README.md`. The artifact list is the README's `## Artifacts`
 section; no machine-readable copy of the Markdown is kept, because the checker reads the Markdown
 itself and a second copy goes stale.
 
@@ -86,8 +92,8 @@ Why, the steps, and the evidence to collect.
   **(checked: N exists)**, `operator` (waits on a human decision), `OPEN-N` **(checked: exists)**.
   A trailing zone label such as `CST` is ignored.
 - A finished item leaves the list and becomes a Done row whose last cell starts with `done` or
-  `dropped` **(checked)**. Cite `git show <commit>:<path>` in the file's intro if its steps are worth
-  keeping.
+  `dropped` **(checked)**. Cite the change id the project uses (commit, deployment, ticket) in the
+  file's intro if its steps are worth keeping.
 
 ## OPEN-ISSUES.md
 
@@ -143,3 +149,22 @@ and `check` fails when it is stale **(checked)**. Never edit it by hand.
 
 Relative links in a folder's Markdown must resolve **(checked)**. No secrets are stored under
 `workstreams/`.
+
+## Platform
+
+- Markdown is UTF-8, LF. The checker reads `utf-8-sig` (a BOM is tolerated) and writes LF on every
+  OS; CRLF input is normalized before parsing.
+- Folder slugs are ASCII: `[a-z0-9-]`, no trailing hyphen, at most 40 characters.
+- Links use `/`. A target containing `\` is an error, and existence is matched case-sensitively, so
+  a link must spell the file name exactly.
+- OS metadata files (`Thumbs.db`, `desktop.ini`, `*.swp`, `*~`) are ignored by the layout check.
+
+## Diagnostics
+
+`check` prints one line per finding as `path:line: [CODE] message`, and exits `0` (clean), `1`
+(findings), or `2` (usage or environment error). Codes are stable: `WS-LAYOUT`, `WS-FRONTMATTER`,
+`WS-PHASE`, `WS-TODO`, `WS-OPEN`, `WS-CONCLUSION`, `WS-STATUS`, `WS-INDEX`, `WS-NEXT`, `WS-IDS`,
+`WS-REFS`, `WS-LINK`, `WS-OVERDUE`.
+
+`check --json` prints `{"specVersion": 1, "root": "...", "errors": [{"code", "where", "message"}],
+"warnings": [...]}` for tools and CI.

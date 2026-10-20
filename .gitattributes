@@ -1,0 +1,7 @@
+# Keep every checkout byte-identical across Windows, macOS and Linux.
+* text=auto eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
