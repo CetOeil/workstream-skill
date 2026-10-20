@@ -1,0 +1,14 @@
+{
+  "name": "workstreams",
+  "owner": {
+    "name": "CetOeil"
+  },
+  "plugins": [
+    {
+      "name": "workstreams",
+      "source": "./",
+      "description": "Keep project work in plans/ as checkable handovers, enforced by a standard-library Python checker.",
+      "version": "0.1.0"
+    }
+  ]
+}
