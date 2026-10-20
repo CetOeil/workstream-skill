@@ -1,5 +1,6 @@
 {
   "name": "workstreams",
+  "description": "The workstreams agent skill: checkable handover folders for project work.",
   "owner": {
     "name": "CetOeil"
   },
@@ -7,7 +8,7 @@
     {
       "name": "workstreams",
       "source": "./",
-      "description": "Keep project work in plans/ as checkable handovers, enforced by a standard-library Python checker.",
+      "description": "Keep project work in workstreams/ as checkable handovers, enforced by a standard-library Python checker.",
       "version": "0.1.0"
     }
   ]

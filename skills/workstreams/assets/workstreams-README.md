@@ -1,4 +1,4 @@
-# Plans
+# Workstreams
 
 Each folder here is one workstream, laid out as a handover so that a reader can pick up its
 outstanding work from the folder alone.
@@ -13,6 +13,6 @@ folder's README front matter and TODO.md: edit those, not the table.
 
 ## Conventions
 
-The folders follow the workstream conventions (`CONVENTIONS.md` of the `workstreams` skill), checked
+The folders follow the workstream conventions (`references/CONVENTIONS.md` of the `workstreams` skill), checked
 by `workstreams.py check`. Add project-specific rules here, for example where raw evidence lives or
 which time zone the timestamps use.

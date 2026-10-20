@@ -1,13 +1,13 @@
 # Workstream conventions
 
-A workstream is one folder under `plans/`, laid out as a handover: a reader, human or agent, can pick
-up its outstanding work from the folder alone. [`scripts/workstreams.py`](scripts/workstreams.py)
+A workstream is one folder under `workstreams/`, laid out as a handover: a reader, human or agent, can pick
+up its outstanding work from the folder alone. [`scripts/workstreams.py`](../scripts/workstreams.py)
 checks every rule marked **(checked)**.
 
 ## Layout
 
 ```text
-plans/
+workstreams/
   README.md                      the index (generated) and any project-specific rules
   YYYY-MM-DD-<slug>/             one workstream (checked: name)
     README.md                    required: front matter, entry point, Next steps, artifacts
@@ -135,11 +135,11 @@ Why, the steps, and the evidence to collect.
 
 ## The index
 
-`plans/README.md` holds the index between `<!-- workstreams:index:start -->` and
+`workstreams/README.md` holds the index between `<!-- workstreams:index:start -->` and
 `<!-- workstreams:index:end -->`. `index` regenerates it from each folder's front matter and TODO.md,
 and `check` fails when it is stale **(checked)**. Never edit it by hand.
 
 ## Links and secrets
 
 Relative links in a folder's Markdown must resolve **(checked)**. No secrets are stored under
-`plans/`.
+`workstreams/`.

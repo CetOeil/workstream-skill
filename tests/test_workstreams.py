@@ -1,17 +1,19 @@
 import contextlib
 import datetime as dt
 import io
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "skills" / "workstreams" / "scripts"))
 import workstreams as ws  # noqa: E402
 
 NOW = dt.datetime(2026, 10, 21, 12, 0)
 
-PLANS_README = """# Plans
+INDEX_README = """# Workstreams
 
 <!-- workstreams:index:start -->
 <!-- workstreams:index:end -->
@@ -128,8 +130,8 @@ def write(root: Path, rel: str, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def make_plans(root: Path) -> None:
-    write(root, "README.md", PLANS_README)
+def make_workstreams(root: Path) -> None:
+    write(root, "README.md", INDEX_README)
     a = "2026-10-20-active-fixture"
     write(root, f"{a}/README.md", ACTIVE_README)
     write(root, f"{a}/TODO.md", ACTIVE_TODO)
@@ -151,7 +153,7 @@ class WorkstreamsTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
-        make_plans(self.root)
+        make_workstreams(self.root)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -327,6 +329,25 @@ class WorkstreamsTest(unittest.TestCase):
         write(self.root, f"{f.name}/TODO.md", ACTIVE_TODO + "\n```\n## 9. Example  [bogus]\n[x](missing.md)\n```\n")
         quiet(ws.cmd_index, self.root)
         self.assertEqual(self.check().errors, [])
+
+    def test_find_root_walks_up_to_an_indexed_workstreams_directory(self):
+        project = self.root / "project"
+        make_workstreams(project / "workstreams")
+        # A skill directory named workstreams has no index README and must be skipped.
+        write(project, "skills/workstreams/SKILL.md", "---\nname: workstreams\n---\n")
+        write(project, "plans/notes.md", "# A plan from another tool\n")
+        cwd = Path.cwd()
+        try:
+            with mock.patch.dict(os.environ, {}, clear=True):
+                os.chdir(project / "skills")
+                self.assertEqual(ws.find_root(None), (project / "workstreams").resolve())
+                os.chdir(project / "workstreams" / "2026-10-20-active-fixture")
+                self.assertEqual(ws.find_root(None), (project / "workstreams").resolve())
+                self.assertEqual(ws.find_root(str(project / "plans")), (project / "plans").resolve())
+                os.environ["WORKSTREAMS_DIR"] = str(project / "plans")
+                self.assertEqual(ws.find_root(None), (project / "plans").resolve())
+        finally:
+            os.chdir(cwd)
 
 
 class ParseWhenTest(unittest.TestCase):

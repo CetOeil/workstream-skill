@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""Maintain the workstream folders under plans/.
+"""Maintain the workstream folders under workstreams/.
 
 Commands:
-  index         regenerate the workstream table in plans/README.md
+  index         regenerate the workstream table in workstreams/README.md
   check         validate every workstream folder and the index; exit 1 on an error
   next          list what is overdue, due, waiting on the operator, or next, across workstreams
-  new SLUG      scaffold plans/<today>-SLUG/ and add it to the index
+  new SLUG      scaffold workstreams/<today>-SLUG/ and add it to the index
   trim-status   move STATUS.md blocks beyond the newest five to STATUS-ARCHIVE.md
 
-The plans directory is --root, else $WORKSTREAMS_DIR, else the first plans/ directory found
-walking up from the current directory. Times are local wall-clock times; a trailing zone label
+The workstreams directory is --root, else $WORKSTREAMS_DIR, else the first workstreams/ directory
+holding a README.md with the index markers, walking up from the current directory. A project that
+keeps its workstreams elsewhere, such as plans/, sets one of the first two. Times are local
+wall-clock times; a trailing zone label
 such as 'CST' or 'UTC' on a due date is accepted and ignored. Standard library only.
 
-The conventions it enforces are in ../CONVENTIONS.md.
+The conventions it enforces are in ../references/CONVENTIONS.md.
 """
 
 from __future__ import annotations
@@ -359,9 +361,11 @@ def find_root(arg: str | None) -> Path:
         return Path(env).resolve()
     here = Path.cwd().resolve()
     for d in (here, *here.parents):
-        if (d / "plans").is_dir():
-            return d / "plans"
-    sys.exit("no plans/ directory found; pass --root or set WORKSTREAMS_DIR")
+        readme = d / "workstreams" / "README.md"
+        # The index markers tell a workstreams root from a skill directory of the same name.
+        if readme.is_file() and INDEX_START in readme.read_text(encoding="utf-8"):
+            return readme.parent
+    sys.exit("no workstreams/README.md with index markers found; pass --root or set WORKSTREAMS_DIR")
 
 
 def folders(root: Path) -> list[Path]:
@@ -520,7 +524,7 @@ def run_check(root: Path, now: dt.datetime) -> Report:
         check_workstream(ws, now, report)
     readme = root / "README.md"
     if not readme.is_file():
-        report.error("README.md", "missing plans/README.md")
+        report.error("README.md", f"missing {root.name}/README.md")
         return report
     text = readme.read_text(encoding="utf-8")
     updated = replace_index(text, render_index(workstreams))
@@ -615,7 +619,7 @@ updated: {stamp}
 
 # {subject}
 
-This folder is one workstream of [`plans/`](../README.md).
+This folder is one workstream; [the index](../README.md) lists the others.
 
 ## What this is
 
@@ -727,7 +731,7 @@ def cmd_trim(root: Path, names: list[str]) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--root", help="the plans directory")
+    parser.add_argument("--root", help="the workstreams directory")
     parser.add_argument("--now", help="override the current local time, 'YYYY-MM-DD HH:MM'")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("index")

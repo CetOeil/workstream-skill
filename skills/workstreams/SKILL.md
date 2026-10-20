@@ -1,28 +1,31 @@
 ---
 name: workstreams
-description: 'Manage workstream folders under plans/ as checkable handovers: README front matter (subject, phase, state, updated) and Next steps, TODO and OPEN-ISSUES bracket grammar, CONCLUSIONS status tags, dated STATUS blocks with an archive, never-reused IDs, and a generated index in plans/README.md, enforced by scripts/workstreams.py (index, check, next, new, trim-status). Use when starting a workstream, recording progress or a decision, finishing or dropping a TODO, resolving an issue, revising a conclusion, handing work over, or asking what work is outstanding or due.'
+description: 'Manage workstream folders under workstreams/ as checkable handovers: README front matter (subject, phase, state, updated) and Next steps, TODO and OPEN-ISSUES bracket grammar, CONCLUSIONS status tags, dated STATUS blocks with an archive, never-reused IDs, and a generated index in workstreams/README.md, enforced by scripts/workstreams.py (index, check, next, new, trim-status). Use when starting a workstream, recording progress or a decision, finishing or dropping a TODO, resolving an issue, revising a conclusion, handing work over, or asking what work is outstanding or due.'
 ---
 
 # Workstreams
 
-The rules are in [CONVENTIONS.md](CONVENTIONS.md); [scripts/workstreams.py](scripts/workstreams.py)
-enforces them (Python 3.9+, standard library only). In the commands below, `WS` stands for
-`python3 <this skill's directory>/scripts/workstreams.py`. If the project keeps its own copy of the
-script, for example `scripts/workstreams.py`, use that copy and its `plans/README.md` rules instead.
+The rules are in [references/CONVENTIONS.md](references/CONVENTIONS.md);
+[scripts/workstreams.py](scripts/workstreams.py) enforces them (Python 3.9+, standard library only).
+In the commands below, `WS` stands for `python3 <this skill's directory>/scripts/workstreams.py`. If
+the project keeps its own copy of the script, for example `scripts/workstreams.py`, use that copy and
+the rules in its `workstreams/README.md` instead.
 
-The script finds the plans directory from `--root`, else `$WORKSTREAMS_DIR`, else the first `plans/`
-walking up from the current directory. `--now 'YYYY-MM-DD HH:MM'` overrides the clock.
+The script finds the workstreams directory from `--root`, else `$WORKSTREAMS_DIR`, else the first
+`workstreams/` with an index `README.md`, walking up from the current directory. A project that keeps
+its workstreams under another name, such as `plans/`, sets `WORKSTREAMS_DIR`; read `workstreams/`
+below as that directory. `--now 'YYYY-MM-DD HH:MM'` overrides the clock.
 
 ## Set up a project once
 
 ```bash
-mkdir -p plans
-cp <this skill's directory>/templates/plans-README.md plans/README.md
+mkdir -p workstreams
+cp <this skill's directory>/assets/workstreams-README.md workstreams/README.md
 WS check
 ```
 
 Then point the project's agent instructions (`AGENTS.md`, `CLAUDE.md` or similar) at this skill and
-require `WS check` to pass before any commit that touches `plans/`.
+require `WS check` to pass before any commit that touches `workstreams/`.
 
 ## Find outstanding work
 
@@ -39,7 +42,7 @@ A TODO tagged `operator` waits on a human decision: present the evidence and sto
 WS new <slug> --subject "<one-line subject>"
 ```
 
-It creates `plans/<today>-<slug>/` with `README.md`, `STATUS.md` and `TODO.md` and adds the index row.
+It creates `workstreams/<today>-<slug>/` with `README.md`, `STATUS.md` and `TODO.md` and adds the index row.
 Write the goal in "What this is", the design in `artifacts/docs/<date>-<slug>-design.md` with a
 `**Status:**` line, and real TODOs with acceptance criteria. Add `PLAN.md`, `FINDINGS.md`,
 `CONCLUSIONS.md`, `OPEN-ISSUES.md` or `SUBAGENTS.md` only when they have content.
@@ -81,4 +84,4 @@ Write the goal in "What this is", the design in `artifacts/docs/<date>-<slug>-de
 - No other top-level files in a workstream folder; evidence goes in `artifacts/analysis/`, log and
   test pointers in `logs/README.md`.
 - Cite an ID from another folder as `<folder>/OPEN-N` or `<folder>/TODO N`.
-- No secrets under `plans/`.
+- No secrets under `workstreams/`.

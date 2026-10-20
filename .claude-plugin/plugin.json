@@ -1,7 +1,7 @@
 {
   "name": "workstreams",
   "version": "0.1.0",
-  "description": "Keep project work in plans/ as checkable handovers: front-matter READMEs, bracketed TODO and OPEN-ISSUES grammar, dated STATUS blocks, and a generated index, enforced by a standard-library Python checker.",
+  "description": "Keep project work in workstreams/ as checkable handovers: front-matter READMEs, bracketed TODO and OPEN-ISSUES grammar, dated STATUS blocks, and a generated index, enforced by a standard-library Python checker.",
   "author": {
     "name": "CetOeil"
   },
