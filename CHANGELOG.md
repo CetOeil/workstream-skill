@@ -2,6 +2,41 @@
 
 All notable changes are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 0.3.0 - 2026-10-23
+
+Breaking:
+
+- `check --json` is `specVersion` 2: each finding is `{code, path, line, message}`, with `path`
+  relative to the root and `line` a number or `null`, and the output is ASCII.
+- `check` applies the same slug rule as `new`: lowercase ASCII words joined by single hyphens, at
+  most 40 characters. A folder such as `2026-10-21-a--b` now fails `WS-LAYOUT`.
+- Exit codes are reliable for every command: 2 (nothing on stdout, the reason on stderr) when no
+  workstreams directory is found, `--root` is not a directory, a slug is bad, a folder exists,
+  `trim-status` names an unknown folder, or `index` cannot read the README or find its markers.
+  Previously several of these exited 1 or with a traceback.
+- An `updated` stamp older than the newest STATUS block is `WS-FRONTMATTER`, not `WS-PHASE`.
+
+Fixed:
+
+- A file that is not UTF-8 is a `WS-ENCODING` finding with its line instead of a crash; `index`
+  and `next` warn about it on stderr. CR-only line endings are normalized too.
+- Every finding has its documented code (no internal `WS-GENERAL`), and text output is
+  `path[:line]: level: [CODE] message` with paths relative to the current directory.
+- Links: CommonMark escapes (`a\_b.md`), `<...>` targets and titled links are handled; every path
+  component is matched case-exactly, `..` no longer reports a false positive, and paths in
+  findings use `/` on Windows.
+- `--root` and `--now` work before or after the command name.
+- The console keeps its own encoding (errors are replaced) instead of being forced to UTF-8.
+- The script parses on Python 3.7, so older interpreters reach the version check; it is
+  executable again.
+- `SKILL.md`: only Agent Skills spec fields (`user-invocable` removed, `compatibility` added), so
+  spec-strict validators accept it; a narrower description that applies only where `workstreams/`
+  exists or set-up is requested; the progress-recording procedure restored.
+- `CONVENTIONS.md` describes what the checker enforces: project rules add to it but are not read
+  by the checker; only `artifacts/` and `logs/` are checked at a folder's root.
+- CI runs on pushes to `main` and on pull requests, with read-only permissions and the current
+  action versions.
+
 ## 0.2.0 - 2026-10-21
 
 - Cross-platform contract: `check` reads `utf-8-sig` (a BOM is tolerated), normalizes CRLF input,
@@ -13,8 +48,8 @@ All notable changes are listed here. Versions follow [Semantic Versioning](https
 - Slug limits: ASCII, at most 40 characters, no trailing hyphen.
 - OS metadata (`Thumbs.db`, `desktop.ini`, `*.swp`, `*~`) no longer trips the layout check; links
   must use `/` and match the file name exactly (case included).
-- `SKILL.md` rewritten: a 446-character description that fits the 500-character catalog cap,
-  `user-invocable: true`, a first-run path for projects without `workstreams/`, and a section for
+- `SKILL.md` rewritten: a 446-character description, `user-invocable: true` (removed in 0.3.0),
+  a first-run path for projects without `workstreams/`, and a section for
   direct `/workstreams` invocation.
 - Docs: normative `MUST` / **(checked)** wording, project overrides, the artifact layout as a
   default rather than a requirement, a Windows junction install, and `python` / `python3` / `py -3`

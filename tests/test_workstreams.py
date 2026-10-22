@@ -243,7 +243,7 @@ class WorkstreamsTest(unittest.TestCase):
             f"{name}/STATUS.md: [WS-STATUS] 6 blocks (at most 5); run trim-status",
             f"{name}: [WS-LAYOUT] unexpected file manifest.json",
             f"{name}/README.md: [WS-PHASE] phase must be one of active, monitoring, blocked, done, closed",
-            f"{name}/README.md: [WS-PHASE] updated 2026-10-20 09:00 is older than the newest STATUS block",
+            f"{name}/README.md: [WS-FRONTMATTER] updated 2026-10-20 09:00 is older than the newest STATUS block",
             f"{name}/TODO.md: [WS-IDS] duplicate TODO 2",
             f"{name}/README.md: [WS-NEXT] Next steps has 4 items (at most 3)",
             f"{name}/README.md: [WS-NEXT] Next steps cites TODO 1, which is done",
@@ -297,8 +297,10 @@ class WorkstreamsTest(unittest.TestCase):
         self.assertEqual(self.check().errors, [])
         text = (self.root / "README.md").read_text(encoding="utf-8")
         self.assertIn("| probe latency | active | started 2026-10-21 | TODO 1 (open): Write the design |", text)
-        self.assertEqual(quiet(ws.cmd_new, self.root, "probe-latency", None, NOW), 1)
-        self.assertEqual(quiet(ws.cmd_new, self.root, "Bad_Slug", None, NOW), 1)
+        with self.assertRaises(ws.UsageError):
+            ws.cmd_new(self.root, "probe-latency", None, NOW)
+        with self.assertRaises(ws.UsageError):
+            ws.cmd_new(self.root, "Bad_Slug", None, NOW)
 
     def test_trim_status_moves_the_oldest_blocks_to_the_archive(self):
         f = self.folder()

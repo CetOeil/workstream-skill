@@ -4,9 +4,9 @@ A workstream is one folder under `workstreams/`, laid out as a handover: a reade
 up its outstanding work from the folder alone. [`scripts/workstreams.py`](../scripts/workstreams.py)
 checks every rule marked **(checked)**.
 
-`MUST` and **(checked)** mean the checker enforces the rule; `SHOULD` is advice for humans and
-agents, not checked. A project's own `workstreams/README.md` may narrow or extend these rules, but
-it cannot relax a `MUST`; record project-specific choices there.
+Rules marked **(checked)** are enforced by the checker; the rest are conventions it cannot verify.
+A project may add its own rules in `workstreams/README.md`. The checker does not read them, and they
+cannot relax a checked rule.
 
 ## Layout
 
@@ -28,8 +28,9 @@ workstreams/
     logs/README.md               test commands and where the logs are
 ```
 
-No other files or directories **(checked)**. The `artifacts/docs/`, `artifacts/analysis/` and
-`logs/README.md` rows are the default layout; a project may choose another and record it in
+Only the files above and the `artifacts/` and `logs/` directories may sit at a folder's root
+**(checked)**; dotfiles and OS metadata files are ignored. What goes inside `artifacts/` and `logs/`
+is a recommendation, not checked; a project that organizes them differently records its choice in
 `workstreams/README.md`. The artifact list is the README's `## Artifacts`
 section; no machine-readable copy of the Markdown is kept, because the checker reads the Markdown
 itself and a second copy goes stale.
@@ -89,8 +90,10 @@ Why, the steps, and the evidence to collect.
 - The bracket's first token is the state **(checked)**: `open`, `monitor` (an ongoing check after a
   change, with nothing to build) or `blocked`.
 - Optional tokens: `due YYYY-MM-DD[ HH:MM]`, `not before YYYY-MM-DD[ HH:MM]`, `after TODO N`
-  **(checked: N exists)**, `operator` (waits on a human decision), `OPEN-N` **(checked: exists)**.
-  A trailing zone label such as `CST` is ignored.
+  **(checked: N exists)**, `operator` (waits on a human decision: an agent presents the evidence
+  and stops), `OPEN-N` **(checked: exists)**. A trailing zone label such as `CST` is ignored.
+- A new item ends with `**Acceptance:**`. Ongoing observation after a change is a `monitor` TODO,
+  not a remark in STATUS.
 - A finished item leaves the list and becomes a Done row whose last cell starts with `done` or
   `dropped` **(checked)**. Cite the change id the project uses (commit, deployment, ticket) in the
   file's intro if its steps are worth keeping.
@@ -147,24 +150,43 @@ and `check` fails when it is stale **(checked)**. Never edit it by hand.
 
 ## Links and secrets
 
-Relative links in a folder's Markdown must resolve **(checked)**. No secrets are stored under
-`workstreams/`.
+Relative links in the Markdown files at a folder's root and in its `logs/` must resolve
+**(checked)**. No secrets are stored under `workstreams/`.
 
 ## Platform
 
-- Markdown is UTF-8, LF. The checker reads `utf-8-sig` (a BOM is tolerated) and writes LF on every
-  OS; CRLF input is normalized before parsing.
-- Folder slugs are ASCII: `[a-z0-9-]`, no trailing hyphen, at most 40 characters.
-- Links use `/`. A target containing `\` is an error, and existence is matched case-sensitively, so
-  a link must spell the file name exactly.
-- OS metadata files (`Thumbs.db`, `desktop.ini`, `*.swp`, `*~`) are ignored by the layout check.
+- Markdown is UTF-8 with LF. The checker reads `utf-8-sig` (a BOM is tolerated), normalizes CRLF
+  and CR to LF before parsing, and writes LF on every OS. A file that is not UTF-8 is a
+  `WS-ENCODING` finding at the line of the first bad byte.
+- A slug is lowercase ASCII letters and digits in words joined by single hyphens, at most 40
+  characters **(checked by both `check` and `new`)**: `probe-latency` passes; `probe--latency`,
+  `probe-` and `Probe` fail.
+- A link target uses `/`. CommonMark backslash escapes such as `a\_b.md` are allowed; any other `\`
+  is an error. Every named component must exist with exactly that case, on every OS. Targets in
+  `<...>` and targets followed by a title are checked too.
+- Dotfiles and OS metadata files (`Thumbs.db`, `desktop.ini`, `*.swp`, `*~`) are ignored by the
+  layout check.
 
 ## Diagnostics
 
-`check` prints one line per finding as `path:line: [CODE] message`, and exits `0` (clean), `1`
-(findings), or `2` (usage or environment error). Codes are stable: `WS-LAYOUT`, `WS-FRONTMATTER`,
-`WS-PHASE`, `WS-TODO`, `WS-OPEN`, `WS-CONCLUSION`, `WS-STATUS`, `WS-INDEX`, `WS-NEXT`, `WS-IDS`,
-`WS-REFS`, `WS-LINK`, `WS-OVERDUE`.
+`check` prints one line per finding, warnings first, as `path[:line]: level: [CODE] message`, with
+the path relative to the current directory and `/` as the separator. Codes are stable: `WS-LAYOUT`,
+`WS-FRONTMATTER`, `WS-PHASE`, `WS-TODO`, `WS-OPEN`, `WS-CONCLUSION`, `WS-STATUS`, `WS-INDEX`,
+`WS-NEXT`, `WS-IDS`, `WS-REFS`, `WS-LINK`, `WS-ENCODING` and, as a warning, `WS-OVERDUE`.
 
-`check --json` prints `{"specVersion": 1, "root": "...", "errors": [{"code", "where", "message"}],
-"warnings": [...]}` for tools and CI.
+Every command exits `0` on success (for `check`: no errors), `1` when `check` found an error, and
+`2` when the command could not run: no workstreams directory, a bad option or slug, a folder that
+already exists, an unknown folder for `trim-status`, or a README or STATUS file the command must
+rewrite but cannot read. On `2` nothing is printed to stdout and the reason goes to stderr. `index`
+and `next` warn on stderr about a file they could not parse.
+
+`check --json` prints ASCII JSON for tools and CI:
+
+```json
+{"specVersion": 2, "root": "/abs/path/workstreams",
+ "errors": [{"code": "WS-LINK", "path": "2026-10-21-probe/TODO.md", "line": 12, "message": "broken link x.md"}],
+ "warnings": []}
+```
+
+`path` is relative to `root` and uses `/`; `line` is a number or `null`. `specVersion` changes only
+when the shape changes incompatibly.

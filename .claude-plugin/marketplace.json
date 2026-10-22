@@ -9,7 +9,7 @@
       "name": "workstreams",
       "source": "./",
       "description": "Keep project work in workstreams/ as checkable handovers, enforced by a standard-library Python checker.",
-      "version": "0.2.0"
+      "version": "0.3.0"
     }
   ]
 }
