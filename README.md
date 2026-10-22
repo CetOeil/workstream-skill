@@ -33,7 +33,7 @@ As a skill directory, for agents that read `SKILL.md` folders (Claude Code, Code
 others):
 
 ```bash
-git clone <this repository> ~/workstreams-skill
+git clone https://github.com/CetOeil/workstream-skill.git ~/workstreams-skill
 mkdir -p ~/.claude/skills ~/.agents/skills
 ln -s ~/workstreams-skill/skills/workstreams ~/.claude/skills/workstreams   # Claude Code, per user
 ln -s ~/workstreams-skill/skills/workstreams ~/.agents/skills/workstreams   # agents that read ~/.agents
@@ -50,10 +50,10 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.agents\skills\workstreams" 
 Or copy `skills/workstreams/` into a project's own skills directory (`.claude/skills/`,
 `.agents/skills/`, `.github/skills/`).
 
-As a Claude Code plugin, from a published copy of this repository:
+As a Claude Code plugin:
 
 ```text
-/plugin marketplace add <owner>/<repository>
+/plugin marketplace add CetOeil/workstream-skill
 /plugin install workstreams@workstreams
 ```
 
